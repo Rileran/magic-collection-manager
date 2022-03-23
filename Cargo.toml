@@ -1,5 +1,6 @@
 [package]
 name = "magic-collection-manager"
+authors = ["Rileran <a.rileran@gmail.com"]
 version = "0.1.0"
 edition = "2021"
 
@@ -9,4 +10,6 @@ edition = "2021"
 clap = { version = "3.1.6", features = ["derive"] }
 dotenv = "0.15.0"
 envy = "0.4.2"
-sheets = "0.2.2"
+google-sheets4 = "3.0.0"
+serde = { version = "1.0.136", features = ["derive"] }
+tokio = { version = "1.17.0", features = ["rt-multi-thread"] }

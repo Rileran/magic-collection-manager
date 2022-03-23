@@ -1,17 +1,48 @@
+mod add;
+mod config;
+mod google;
+mod link;
+
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
+use dotenv::dotenv;
 
-fn main() {
+use crate::add::add_set;
+use crate::config::Config;
+use crate::link::link;
+
+#[tokio::main]
+async fn main() {
+    dotenv().ok();
+
     let cli = Cli::parse();
+    let config = match envy::from_env::<Config>() {
+        Ok(config) => config,
+        Err(error) => panic!("{:?}", error),
+    };
 
-    match &cli.command {
+    let secret_file = config.secret_file.unwrap_or(cli.secret_file);
+    let token_file = config.token_file.unwrap_or(cli.token_file);
+
+    match cli.command {
         Commands::Add { set } => {
-            println!("Add set {set}")
+            match tokio::spawn(add_set(secret_file, token_file, set))
+                .await
+                .unwrap()
+            {
+                Ok(set) => println!("Successfully add set {set} to your spreadsheet."),
+                Err(e) => println!("An error occured while adding the set: {e}"),
+            }
         }
         Commands::Update { set } => {
-            println!("Update set {:?}", set)
+            println!("Update set {:?}", set);
         }
         Commands::Link => {
-            println!("Linking with google sheet")
+            match tokio::spawn(link(secret_file, token_file)).await.unwrap() {
+                Ok(()) => println!("Successfully linked to your google account."),
+                Err(e) => println!("An error occured when linking your account: {e}"),
+            };
         }
     }
 }
@@ -21,6 +52,14 @@ fn main() {
 struct Cli {
     #[clap(short, long)]
     pub verbose: bool,
+
+    /// Secret json file from Google Cloud Plateform
+    #[clap(short = 'f', long, default_value = "secrets.json")]
+    pub secret_file: PathBuf,
+
+    /// Where your oauth2 tokens will be saved
+    #[clap(short, long, default_value = "tokens.json")]
+    pub token_file: PathBuf,
 
     #[clap(subcommand)]
     pub command: Commands,

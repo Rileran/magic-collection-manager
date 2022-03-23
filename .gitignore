@@ -3,3 +3,7 @@
 
 # Environment variables
 .env
+
+# Default secret files
+secrets.json
+tokens.json

@@ -1,16 +1,11 @@
-mod add;
-mod config;
-mod google;
-mod link;
-
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 
-use crate::add::add_set;
-use crate::config::Config;
-use crate::link::link;
+use clap::{Parser, Subcommand};
+use magic_collection_manager::commands::add::add_set;
+use magic_collection_manager::commands::link::link;
+use magic_collection_manager::config::Config;
 
 #[tokio::main]
 async fn main() {

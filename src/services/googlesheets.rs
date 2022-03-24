@@ -5,7 +5,8 @@ use google_sheets4::hyper::client::HttpConnector;
 use google_sheets4::hyper::Client;
 use google_sheets4::hyper_rustls::HttpsConnector;
 use google_sheets4::oauth2::authenticator::Authenticator;
-use google_sheets4::{oauth2, Sheets};
+use google_sheets4::oauth2::{self, InstalledFlowAuthenticator, InstalledFlowReturnMethod};
+use google_sheets4::Sheets;
 
 pub async fn authenticate(
     secrets: PathBuf,
@@ -13,13 +14,10 @@ pub async fn authenticate(
 ) -> Result<Authenticator<HttpsConnector<HttpConnector>>, Error> {
     let secret = oauth2::read_application_secret(secrets).await?;
 
-    let auth = oauth2::InstalledFlowAuthenticator::builder(
-        secret,
-        oauth2::InstalledFlowReturnMethod::HTTPRedirect,
-    )
-    .persist_tokens_to_disk(tokens)
-    .build()
-    .await?;
+    let auth = InstalledFlowAuthenticator::builder(secret, InstalledFlowReturnMethod::HTTPRedirect)
+        .persist_tokens_to_disk(tokens)
+        .build()
+        .await?;
 
     Ok(auth)
 }

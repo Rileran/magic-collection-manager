@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::google::authenticate;
+use crate::services::googlesheets::authenticate;
 
 pub async fn link(secrets: PathBuf, tokens: PathBuf) -> Result<(), String> {
     let auth = match authenticate(secrets, tokens).await {

@@ -21,12 +21,12 @@ async fn main() {
     let token_file = config.token_file.unwrap_or(cli.token_file);
 
     match cli.command {
-        Commands::Add { set } => {
-            match tokio::spawn(add_set(secret_file, token_file, set))
+        Commands::Add { set_code } => {
+            match tokio::spawn(add_set(secret_file, token_file, set_code))
                 .await
                 .unwrap()
             {
-                Ok(set) => println!("Successfully add set {set} to your spreadsheet."),
+                Ok(set_code) => println!("Successfully add set {set_code} to your spreadsheet."),
                 Err(e) => println!("An error occured while adding the set: {e}"),
             }
         }
@@ -66,7 +66,7 @@ enum Commands {
     Add {
         /// Three letter set code to add to the collection
         #[clap(validator = validate_set_code)]
-        set: String,
+        set_code: String,
     },
     /// Update a set pricing
     Update {

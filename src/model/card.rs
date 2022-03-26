@@ -9,6 +9,7 @@ pub enum Rarity {
     UNCOMMON,
     RARE,
     MYTHIC,
+    SPECIAL,
 }
 
 impl fmt::Display for Rarity {
@@ -18,6 +19,7 @@ impl fmt::Display for Rarity {
             Rarity::UNCOMMON => write!(f, "U"),
             Rarity::RARE => write!(f, "R"),
             Rarity::MYTHIC => write!(f, "M"),
+            Rarity::SPECIAL => write!(f, "S"),
         }
     }
 }

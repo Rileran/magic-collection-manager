@@ -18,12 +18,22 @@ pub async fn add_set(
         Err(e) => return Err(format!("{e}")),
     };
 
-    println!("{:?}", cards);
-
-    let _spreadsheets = match spreadsheets(secrets, tokens).await {
+    let spreadsheets = match spreadsheets(secrets, tokens).await {
         Ok(spreadsheets) => spreadsheets,
         Err(e) => return Err(format!("Can't connect to spreadsheet API: {e}")),
     };
+
+    let titles: Vec<String> = spreadsheets.get_titles().await;
+
+    if !titles.contains(&set_code) {
+        println!(
+            "Set {} does not exists in your spreadsheet. Creating it...",
+            &set_code
+        );
+        spreadsheets.create_new_sheet(&set_code).await;
+    }
+
+    spreadsheets.add_cards_to_extension(cards).await;
 
     Ok(set_code)
 }

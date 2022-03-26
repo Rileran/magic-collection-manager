@@ -45,7 +45,7 @@ impl Into<Card> for CardResponse {
         Card {
             name: self.name,
             set: self.set,
-            collector_number: self.collector_number.parse().unwrap(),
+            collector_number: self.collector_number,
             price: self
                 .prices
                 .eur
@@ -73,5 +73,5 @@ pub async fn get_cards_from_set(set: Set) -> Result<Vec<Card>, Error> {
         next_page = search_response.next_page.unwrap();
     }
 
-    Ok(cards.into_iter().map(|card| card.into()).collect())
+    Ok(cards.into_iter().map(CardResponse::into).collect())
 }

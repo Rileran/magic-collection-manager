@@ -5,6 +5,7 @@ use dotenv::dotenv;
 use clap::{Parser, Subcommand};
 use magic_collection_manager::commands::add::add_set;
 use magic_collection_manager::commands::link::link;
+use magic_collection_manager::commands::update::update_set;
 use magic_collection_manager::config::Config;
 
 #[tokio::main]
@@ -21,17 +22,27 @@ async fn main() {
     let token_file = config.token_file.unwrap_or(cli.token_file);
 
     match cli.command {
-        Commands::Add { set_code } => {
-            match tokio::spawn(add_set(secret_file, token_file, set_code))
+        Commands::Add { set_codes } => {
+            match tokio::spawn(add_set(secret_file, token_file, set_codes))
                 .await
                 .unwrap()
             {
-                Ok(set_code) => println!("Successfully add set {set_code} to your spreadsheet."),
+                Ok(set_codes) => {
+                    println!("Successfully add set {:?} to your spreadsheet.", set_codes)
+                }
                 Err(e) => println!("An error occured while adding the set: {e}"),
             }
         }
-        Commands::Update { set } => {
-            println!("Update set {:?}", set);
+        Commands::Update { set_codes } => {
+            match tokio::spawn(update_set(secret_file, token_file, set_codes))
+                .await
+                .unwrap()
+            {
+                Ok(set_codes) => {
+                    println!("Successfully add set {:?} to your spreadsheet.", set_codes)
+                }
+                Err(e) => println!("An error occured while adding the set: {e}"),
+            }
         }
         Commands::Link => {
             match tokio::spawn(link(secret_file, token_file)).await.unwrap() {
@@ -66,13 +77,13 @@ enum Commands {
     Add {
         /// Three letter set code to add to the collection
         #[clap(validator = validate_set_code)]
-        set_code: String,
+        set_codes: Vec<String>,
     },
     /// Update a set pricing
     Update {
-        /// List of three letter set codes to update the price
+        /// Three letter set codes to update the price
         #[clap(validator = validate_set_code)]
-        set: Vec<String>,
+        set_codes: Vec<String>,
     },
     /// Link the program with your google sheet
     Link,

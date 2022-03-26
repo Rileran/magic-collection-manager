@@ -74,7 +74,11 @@ impl Spreadsheet {
             .clone()
     }
 
-    pub async fn add_cards_to_extension(&self, cards: Vec<Card>) -> UpdateValuesResponse {
+    pub async fn add_cards_to_extension(
+        &self,
+        set_code: &String,
+        cards: Vec<Card>,
+    ) -> UpdateValuesResponse {
         let range_end = cards.len() + 1;
         let values = ValueRange {
             values: Some(cards.into_iter().map(Card::to_vec_string).collect()),
@@ -83,7 +87,50 @@ impl Spreadsheet {
 
         self.sheets
             .spreadsheets()
-            .values_update(values, &self.id, format!("A2:E{}", range_end).as_str())
+            .values_update(
+                values,
+                &self.id,
+                format!("{}!A2:D{}", set_code, range_end).as_str(),
+            )
+            .value_input_option("USER_ENTERED")
+            .doit()
+            .await
+            .unwrap()
+            .1
+    }
+
+    pub async fn update_card_prices(
+        &self,
+        set_code: &String,
+        cards: Vec<Card>,
+    ) -> UpdateValuesResponse {
+        let range_end = cards.len() + 1;
+        let values = ValueRange {
+            values: Some(
+                cards
+                    .into_iter()
+                    .map(|card| {
+                        vec![match card.price {
+                            Some(price) => {
+                                format!("{:.2}", (price as f64) / 100.0).replace(".", ",")
+                            }
+                            None => String::new(),
+                        }]
+                    })
+                    .collect(),
+            ),
+            ..Default::default()
+        };
+
+        println!("{:?}", values);
+
+        self.sheets
+            .spreadsheets()
+            .values_update(
+                values,
+                &self.id,
+                format!("{}!D2:D{}", set_code, range_end).as_str(),
+            )
             .value_input_option("USER_ENTERED")
             .doit()
             .await

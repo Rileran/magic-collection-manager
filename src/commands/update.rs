@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::services::googlesheets::spreadsheets;
 use crate::services::scryfall::{get_cards_from_set, get_set};
 
-pub async fn add_set(
+pub async fn update_set(
     secrets: PathBuf,
     tokens: PathBuf,
     set_codes: Vec<String>,
@@ -14,7 +14,7 @@ pub async fn add_set(
     };
 
     for set_code in &set_codes {
-        println!("Adding set {}", &set_code);
+        println!("Updating set {}", &set_code);
         let set = match get_set(&set_code).await {
             Ok(set) => set,
             Err(e) => return Err(format!("{e}")),
@@ -28,15 +28,13 @@ pub async fn add_set(
         let titles: Vec<String> = spreadsheets.get_titles().await;
 
         if !titles.contains(&set_code) {
-            println!(
-                "Set {} does not exists in your spreadsheet. Creating it...",
+            panic!(
+                "Set {} does not exists in your spreadsheet. Creating it first using add command.",
                 &set_code
-            );
-            spreadsheets.create_new_sheet(&set_code).await;
+            )
         }
 
-        spreadsheets.add_cards_to_extension(&set_code, cards).await;
+        spreadsheets.update_card_prices(&set_code, cards).await;
     }
-
     Ok(set_codes)
 }
